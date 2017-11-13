@@ -5,6 +5,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wyverne.Core", "Wyverne.Cor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wyverne.Core.IO", "Wyverne.Core.IO\Wyverne.Core.IO.csproj", "{FFB1D231-D39D-4C7B-A6B9-C82B391023F3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{B499413A-7422-445F-AE0D-03EC1ED5E378}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{3F784E3A-8F17-4E83-8F1C-11FC3C5E551D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wyverne.Core.IO.NUnit", "Wyverne.Core.IO.NUnit\Wyverne.Core.IO.NUnit.csproj", "{90D84C81-5A79-47A1-BBF3-B2C4C0F843DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +25,10 @@ Global
 		{FFB1D231-D39D-4C7B-A6B9-C82B391023F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFB1D231-D39D-4C7B-A6B9-C82B391023F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFB1D231-D39D-4C7B-A6B9-C82B391023F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90D84C81-5A79-47A1-BBF3-B2C4C0F843DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90D84C81-5A79-47A1-BBF3-B2C4C0F843DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90D84C81-5A79-47A1-BBF3-B2C4C0F843DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90D84C81-5A79-47A1-BBF3-B2C4C0F843DB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
@@ -172,5 +182,10 @@ Global
 		$27.IncludeInstanceMembers = True
 		$27.IncludeStaticEntities = True
 		version = 1.0.0
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BB08E37F-3DE8-41D8-A1F5-9AC86E35F3E2} = {B499413A-7422-445F-AE0D-03EC1ED5E378}
+		{FFB1D231-D39D-4C7B-A6B9-C82B391023F3} = {B499413A-7422-445F-AE0D-03EC1ED5E378}
+		{90D84C81-5A79-47A1-BBF3-B2C4C0F843DB} = {3F784E3A-8F17-4E83-8F1C-11FC3C5E551D}
 	EndGlobalSection
 EndGlobal
