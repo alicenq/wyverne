@@ -35,6 +35,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WyDocument.cs" />
+    <Compile Include="WyProject.cs" />
+    <Compile Include="WyDocMetadata.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Serialization\" />
