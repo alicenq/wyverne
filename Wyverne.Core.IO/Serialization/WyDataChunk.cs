@@ -241,8 +241,14 @@ namespace Wyverne.Core.IO.Serialization
 
 		public void Dispose()
 		{
-			lock (_opLock) {
-				this._buffer = null;
+			if (_buffer != null) {
+				lock (_opLock) {
+					var gen = GC.GetGeneration(this._buffer);
+
+					this._buffer = null;
+
+					GC.Collect(gen, GCCollectionMode.Default);
+				}
 			}
 		}
 	}
