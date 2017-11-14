@@ -1,5 +1,5 @@
 ﻿//
-// WyDocMetadata.cs
+// TestSerialization.cs
 //
 // Author:
 //       Alice Quiros <email@aliceq.me>
@@ -23,42 +23,36 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+using NUnit.Framework;
 using System;
-namespace Wyverne.Core.IO
+using Wyverne.Core.IO.Serialization;
+using System.Diagnostics;
+using System.Threading;
+
+namespace Wyverne.Core.IO.NUnit
 {
-	/// <summary>
-	/// Metadata associated with a Wyverne document. This is the only document data loaded when teh project file is initially opened.
-	/// </summary>
-	public class WyDocMetadata
+	[TestFixture()]
+	public class TestSerialization
 	{
-		/// <summary>
-		/// A unique identifier for the document within the context of its parent project
-		/// </summary>
-		/// <value>The identifier.</value>
-		public Guid Id { get; }
+		Random r = new Random();
 
-		/// <summary>
-		/// The name of the project
-		/// </summary>
-		public string Name { get; set; }
-
-		/// <summary>
-		/// An optional description for the project
-		/// </summary>
-		public string Description { get; set; }
-
-		/// <summary>
-		/// The document type this metadata is for. This Type is guaranteed to extend Wyverne.Core.IO.WyDocument.
-		/// </summary>
-		public Type type { get; }
-
-		public WyDocMetadata(Guid docId, Type docType)
+		[Test()]
+		public void TestUTF8String()
 		{
-			if (!docType.IsSubclassOf(typeof(WyDocument)))
-			{ throw new InvalidCastException("Document type must extend Wyverne.Core.IO.WyDocument"); }
+			var test = "Hello world, this is a test";
+			var uut = WyDataChunk.FromString(test);
 
-			this.Id = docId;
-			this.type = docType;
+			var len = uut.Length;
+			var str = uut.ToUTF8String();
+
+			Console.WriteLine($"{test} --({len})-> {str}");
+
+			var arr = new byte[len];
+			uut.Read(arr, 0, arr.Length);
+
+			Assert.AreEqual(len, test.Length);
+			Assert.AreEqual(len, arr.Length);
+			Assert.AreEqual(str, test);
 		}
 	}
 }

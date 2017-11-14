@@ -1,5 +1,5 @@
 ﻿//
-// WyDocMetadata.cs
+// WyDocumentSerializer.cs
 //
 // Author:
 //       Alice Quiros <email@aliceq.me>
@@ -24,41 +24,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
-namespace Wyverne.Core.IO
+namespace Wyverne.Core.IO.Serialization
 {
-	/// <summary>
-	/// Metadata associated with a Wyverne document. This is the only document data loaded when teh project file is initially opened.
-	/// </summary>
-	public class WyDocMetadata
+	public class WyDocumentSerializer
 	{
-		/// <summary>
-		/// A unique identifier for the document within the context of its parent project
-		/// </summary>
-		/// <value>The identifier.</value>
-		public Guid Id { get; }
-
-		/// <summary>
-		/// The name of the project
-		/// </summary>
-		public string Name { get; set; }
-
-		/// <summary>
-		/// An optional description for the project
-		/// </summary>
-		public string Description { get; set; }
-
-		/// <summary>
-		/// The document type this metadata is for. This Type is guaranteed to extend Wyverne.Core.IO.WyDocument.
-		/// </summary>
-		public Type type { get; }
-
-		public WyDocMetadata(Guid docId, Type docType)
-		{
-			if (!docType.IsSubclassOf(typeof(WyDocument)))
-			{ throw new InvalidCastException("Document type must extend Wyverne.Core.IO.WyDocument"); }
-
-			this.Id = docId;
-			this.type = docType;
-		}
+		public WyDocumentSerializer()
+		{ }
 	}
 }

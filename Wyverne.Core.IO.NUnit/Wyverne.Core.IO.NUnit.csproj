@@ -33,5 +33,14 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="TestSerialization.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Wyverne.Core.IO\Wyverne.Core.IO.csproj">
+      <Project>{FFB1D231-D39D-4C7B-A6B9-C82B391023F3}</Project>
+      <Name>Wyverne.Core.IO</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

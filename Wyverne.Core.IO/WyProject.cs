@@ -72,6 +72,12 @@ namespace Wyverne.Core.IO
 			this.Description = null;
 		}
 
+		public Stream ToStream()
+		{
+			// TODO write out method
+			return null;
+		}
+
 		public static WyProject FromStream(Stream stream)
 		{
 			if (stream == null) throw new ArgumentNullException();

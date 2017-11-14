@@ -38,6 +38,8 @@
     <Compile Include="WyDocument.cs" />
     <Compile Include="WyProject.cs" />
     <Compile Include="WyDocMetadata.cs" />
+    <Compile Include="Serialization\WyDocumentSerializer.cs" />
+    <Compile Include="Serialization\WyDataChunk.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Serialization\" />
