@@ -1,5 +1,5 @@
 ﻿//
-// WyResourceProperties.cs
+// TestWyDocument.cs
 //
 // Author:
 //       Alice Quiros <email@aliceq.me>
@@ -24,35 +24,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
-namespace Wyverne.Core.IO
+namespace Wyverne.Core.IO.NUnit
 {
 	/// <summary>
-	/// Base class to be implemented by all Wyverne documents. A document is a single "file" as part of a larger 
-	/// Wyverne project and can have its own persistant properties and resources.
+	/// Wyverne document for testing
 	/// </summary>
-	public abstract class WyDocument
+	public class TestWyDocument : WyDocument
 	{
-		/// <summary>
-		/// Document metadata including the document type
-		/// </summary>
-		public WyDocMetadata Metadata { get; }
 
-		/// <summary>
-		/// Object containing persistant property data. Items held in here are easy-serialized. It is not recommended
-		/// to store data involving complex serialization (such as Dictionaries) or requiring binary data (such as 
-		/// ImageS) within the object's properties.
-		/// </summary>
-		public object Properties { get; set; }
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="T:Wyverne.Core.IO.WyDocument"/> class.
-		/// </summary>
-		/// <param name="docId">Unique document identifier</param>
-		/// <param name="name">Document name</param>
-		public WyDocument(Guid docId, string name)
+		public TestWyDocument(object properties)
+			: base(Guid.NewGuid(), "Test-Document-" + DateTime.Now.ToString("HHmmss"))
 		{
-			this.Metadata = new WyDocMetadata(docId, this.GetType());
-			this.Properties = new object();
+			this.Properties = properties;
 		}
+
 	}
 }
