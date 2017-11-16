@@ -44,11 +44,13 @@ namespace Wyverne.Core.IO.Serialization
 		/// </summary>
 		public long Length => _buffer?.Length ?? -1;
 
+		public bool Disposed { get { return _buffer == null; } }
+
 		/// <summary>
 		/// The next data chunk in the series
 		/// </summary>
 		/// <value>The next.</value>
-		public WyDataChunk Next { get; set; }
+		public WyDataChunk Next { get; protected set; }
 
 		object _opLock;
 		byte[] _buffer;
@@ -65,13 +67,19 @@ namespace Wyverne.Core.IO.Serialization
 		/// Returns the UTF8 encoded string representation of the data
 		/// </summary>
 		public string ToUTF8String()
-		{ return new string(Encoding.UTF8.GetChars(_buffer)); }
+		{
+			if (_buffer == null) throw new ObjectDisposedException(nameof(WyDataChunk));
+			return new string(Encoding.UTF8.GetChars(_buffer));
+		}
 
 		/// <summary>
 		/// Returns the ASCII encoded string representation of the data
 		/// </summary>
 		public string ToASCIIString()
-		{ return new string(Encoding.ASCII.GetChars(_buffer)); }
+		{
+			if (_buffer == null) throw new ObjectDisposedException(nameof(WyDataChunk));
+			return new string(Encoding.ASCII.GetChars(_buffer));
+		}
 
 		public override string ToString()
 		{ return Length >= 0 ? "{ Disposed }" : $"{{ Bytes: {Length} }}"; }
@@ -87,7 +95,7 @@ namespace Wyverne.Core.IO.Serialization
 		/// </summary>
 		public byte ReadAt(long offset)
 		{
-			if (_buffer == null) throw new ObjectDisposedException("WyDataChunk Buffer");
+			if (_buffer == null) throw new ObjectDisposedException(nameof(WyDataChunk));
 			return _buffer[offset];
 		}
 
@@ -125,7 +133,7 @@ namespace Wyverne.Core.IO.Serialization
 		public byte[] ReadAt(long offset, int count)
 		{
 			lock (_opLock) {
-				if (_buffer == null) throw new ObjectDisposedException("WyDataChunk Buffer");
+				if (_buffer == null) throw new ObjectDisposedException(nameof(WyDataChunk));
 				if (count <= 0) return new byte[0];
 
 				var data = new byte[Math.Min(_buffer.Length, offset + count) - offset];
@@ -165,7 +173,7 @@ namespace Wyverne.Core.IO.Serialization
 		/// <param name="count">The number of bytes desired</param>
 		public int Read(long sourceIndex, byte[] destinationArray, int destinationIndex, int count)
 		{
-			if (_buffer == null) throw new ObjectDisposedException("WyDataChunk Buffer");
+			if (_buffer == null) throw new ObjectDisposedException(nameof(WyDataChunk));
 
 			lock (_opLock) {
 				if (destinationArray == null
@@ -199,9 +207,19 @@ namespace Wyverne.Core.IO.Serialization
 			while (node != null && !chunks.Contains(node)) {
 				chain.Add(node);
 				chunks.Add(node);
+				node = node.Next;
 			}
 
 			return chain.AsEnumerable();
+		}
+
+		/// <summary>
+		/// Makes this the data chunk following the passed data chunk
+		/// </summary>
+		public void Follows(WyDataChunk chunk)
+		{
+			if (chunk == null) throw new ArgumentNullException();
+			chunk.Next = this;
 		}
 
 		/// <summary>
@@ -209,6 +227,12 @@ namespace Wyverne.Core.IO.Serialization
 		/// </summary>
 		public static WyDataChunk FromBytes(byte[] bytes)
 		{ return new WyDataChunk(bytes); }
+
+		/// <summary>
+		/// Creates a data chunk from a collection of bytes
+		/// </summary>
+		public static WyDataChunk FromCollection(ICollection<byte> collection)
+		{ return new WyDataChunk(collection?.ToArray()); }
 
 		/// <summary>
 		/// Creates a data chunk from a string using a specified encoding
@@ -237,6 +261,66 @@ namespace Wyverne.Core.IO.Serialization
 			var buffer = new byte[Math.Max(count, 0)];
 			stream.Read(buffer, 0, buffer.Length);
 			return new WyDataChunk(buffer);
+		}
+
+		/// <summary>
+		/// Chains a series of data chunks where the first references the second, the second references the third and
+		/// so on, then returns the first node in the series. Note that this will override the current 'Next'
+		/// value of each data chunk.
+		/// </summary>
+		public static WyDataChunk Chain(params WyDataChunk[] datas)
+		{ return Chain((IEnumerable<WyDataChunk>)datas); }
+
+		/// <summary>
+		/// Chains a series of data chunks where the first references the second, the second references the third and
+		/// so on, then returns the first node in the series. Note that this will override the current 'Next'
+		/// value of each data chunk.
+		/// </summary>
+		public static WyDataChunk Chain(IEnumerable<WyDataChunk> datas)
+		{
+			if (datas == null || datas.Count() == 0) return null;
+			if (datas.Count() == 1) return datas.Single();
+
+			var first = datas.First(d => d != null);
+			var prev = first;
+
+			foreach (var data in datas.Skip(1)) {
+				if (data != null) {
+					prev.Next = data;
+					prev = data;
+				}
+			}
+
+			return first;
+		}
+
+		/// <summary>
+		/// Chains a series of data chunks into a circular chain. Note that this will override the current 'Next'
+		/// value of each data chunk.
+		/// </summary>
+		public static WyDataChunk ChainCircular(params WyDataChunk[] datas)
+		{ return ChainCircular((IEnumerable<WyDataChunk>)datas); }
+
+		/// <summary>
+		/// Chains a series of data chunks into a circular chain. Note that this will override the current 'Next'
+		/// value of each data chunk.
+		/// </summary>
+		public static WyDataChunk ChainCircular(IEnumerable<WyDataChunk> datas)
+		{
+			if (datas == null || datas.Count() == 0) return null;
+			if (datas.Count() == 1) return datas.Single();
+
+			var first = datas.First(d => d != null);
+			var prev = datas.Last(d => d != null);
+
+			foreach (var data in datas) {
+				if (data != null) {
+					prev.Next = data;
+					prev = data;
+				}
+			}
+
+			return first;
 		}
 
 		public void Dispose()

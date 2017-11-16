@@ -35,7 +35,7 @@ namespace Wyverne.Core.IO.NUnit
 		public TestWyDocument(object properties)
 			: base(Guid.NewGuid(), "Test-Document-" + DateTime.Now.ToString("HHmmss"))
 		{
-			this.Properties = properties;
+			Properties = properties;
 		}
 
 	}

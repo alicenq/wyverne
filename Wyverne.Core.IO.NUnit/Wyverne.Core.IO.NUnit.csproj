@@ -34,6 +34,7 @@
   <ItemGroup>
     <Compile Include="TestSerialization.cs" />
     <Compile Include="TestWyDocument.cs" />
+    <Compile Include="TestChaining.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wyverne.Core.IO\Wyverne.Core.IO.csproj">

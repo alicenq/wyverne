@@ -26,26 +26,22 @@
 using NUnit.Framework;
 using System;
 using Wyverne.Core.IO.Serialization;
-using System.Diagnostics;
-using System.Threading;
 
 namespace Wyverne.Core.IO.NUnit
 {
-	[TestFixture()]
+	[TestFixture]
 	public class TestSerialization
 	{
-		Random r = new Random();
-
-		[Test()]
+		[Test]
 		public void TestUTF8String()
 		{
+			Console.WriteLine("Run TestUTF8String");
+
 			var test = "Hello world, this is a test";
 			var uut = WyDataChunk.FromString(test);
 
 			var len = uut.Length;
 			var str = uut.ToUTF8String();
-
-			Console.WriteLine($"{test} --({len})-> {str}");
 
 			var arr = new byte[len];
 			uut.Read(arr, 0, arr.Length);
@@ -55,9 +51,11 @@ namespace Wyverne.Core.IO.NUnit
 			Assert.AreEqual(str, test);
 		}
 
-		[Test()]
+		[Test]
 		public void TestPropsSerialization()
 		{
+			Console.WriteLine("Run TestPropsSerialization");
+
 			var s = new WyDocumentSerializer<TestWyDocument>();
 			var p = new {
 				String = Environment.MachineName + "-" + DateTime.Now.ToString(),
@@ -79,30 +77,53 @@ namespace Wyverne.Core.IO.NUnit
 
 			s.LoadJSONProperties(copy, p.GetType(), json);
 
-			var pCopy = Cast(p, copy.Properties);
-
 			Console.WriteLine(json);
 
 			Assert.NotNull(copy.Properties);
 			Assert.AreEqual(uut.Properties.GetType(), copy.Properties.GetType());
+			Assert.AreEqual(uut.Properties.GetType(), copy.Properties.GetType());
 
-			Assert.AreNotSame(p, pCopy);
-			Assert.AreNotSame(p.Array, pCopy.Array);
-			Assert.AreNotSame(p.ComplexType, pCopy.ComplexType);
+			Assert.AreNotSame(uut.Properties, copy.Properties);
 
-			Assert.AreEqual(p.String, pCopy.String);
-			Assert.AreEqual(p.Int, pCopy.Int);
-			Assert.AreEqual(p.Float, pCopy.Float);
-			Assert.AreEqual(p.DateTime, pCopy.DateTime);
-			Assert.AreEqual(p.Array, pCopy.Array);
-			Assert.AreEqual(p.ComplexType.a, pCopy.ComplexType.a);
-			Assert.AreEqual(p.ComplexType.b, pCopy.ComplexType.b);
-			Assert.AreEqual(p.ComplexType.c, pCopy.ComplexType.c);
-			Assert.AreEqual(p.ComplexType.d, pCopy.ComplexType.d);
+			Assert.AreEqual(s.GetJSONProperties(uut), s.GetJSONProperties(copy));
 		}
 
-		// Helper function to trick the compiler into converting obj into an anonymous type
-		private T Cast<T>(T typeHolder, object obj)
-		{ return (T)obj; }
+		[Test]
+		public void TestPropsToUTF8()
+		{
+			Console.WriteLine("Run TestPropsToUTF8");
+
+			var s = new WyDocumentSerializer<TestWyDocument>();
+			var p = new {
+				String = Environment.MachineName + "-" + Guid.NewGuid() + ":" + DateTime.Now,
+				Data = new byte[] { 0, 1, 2, 4, 8, 16, 32, 64, 128 },
+				Data2 = new byte[] { 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 164 }
+			};
+			var uut = new TestWyDocument(p);
+			var copy = new TestWyDocument(null);
+
+			// Convert to string first
+			var json = s.GetJSONProperties(uut);
+
+			// Then convert to binary data
+			using (var data = WyDataChunk.FromString(json)) {
+				// Print length
+				var size = System.Text.Encoding.UTF8.GetBytes(p.String).Length + p.Data.Length + p.Data2.Length;
+
+				Console.WriteLine($"Estimated={size}");
+				Console.WriteLine($"Str=({json.Length}) {json}");
+				Console.WriteLine($"Bytes={data.Length} ({(float)data.Length  / size:0.000} x original)");
+
+				// Now create that data stream back into properties
+				s.LoadJSONProperties(copy, p.GetType(), data.ToUTF8String());
+			}
+
+			// And assert
+			Assert.NotNull(copy.Properties);
+			Assert.AreEqual(uut.Properties.GetType(), copy.Properties.GetType());
+
+
+			Assert.AreEqual(s.GetJSONProperties(uut), s.GetJSONProperties(copy));
+		}
 	}
 }

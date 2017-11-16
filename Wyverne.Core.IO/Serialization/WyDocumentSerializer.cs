@@ -24,6 +24,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Wyverne.Core.IO.Serialization
@@ -44,6 +45,11 @@ namespace Wyverne.Core.IO.Serialization
 				ObjectCreationHandling = ObjectCreationHandling.Auto,
 				NullValueHandling = NullValueHandling.Ignore
 			};
+		}
+
+		public WyDataChunk Serialize(TDoc document)
+		{
+			return null;
 		}
 
 		/// <summary>
