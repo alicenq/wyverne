@@ -24,6 +24,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using System.Linq;
+
 namespace Wyverne.Core.IO.Serialization
 {
 	/// <summary>
@@ -34,26 +36,34 @@ namespace Wyverne.Core.IO.Serialization
 		WySerializationContext Serialize();
 	}
 
-	/// <summary>
-	/// Serialization context for a serialized resource containing its type, id and data
-	/// </summary>
-	public struct WySerializationContext
+	public abstract class WyResource : IWyResource
 	{
-		public string Id { get; }
-		public Type Type { get; }
-		public WyDataChunk Data { get; }
+		public abstract WySerializationContext Serialize();
 
-		public long Length { get { return Data.Length; } }
-
-		public WySerializationContext(string resourceId, Type resourceType, WyDataChunk data)
+		/// <summary>
+		/// Returns false if the passed id is blank, less than 4 characters or contains characters outside the range 0-9a-zA-Z._-
+		/// </summary>
+		public static bool IsValidId(string id)
 		{
-			if (String.IsNullOrWhiteSpace(resourceId)) throw new InvalidResourceIdException();
-			if (resourceType == null || !resourceType.IsInstanceOfType(typeof(IWyResource))) throw new InvalidCastException("Resource type must be subclass of IWyResource");
-			if (data == null || data.Disposed) throw new ObjectDisposedException(nameof(data));
+			id = id?.Trim();
+			return (id != null && id.Length >= 4 && id.All(c => Char.IsLetterOrDigit(c) || c == '.' || c == '-' || c == '_'));
+		}
 
-			this.Id = resourceId.Trim();
-			this.Type = resourceType;
-			this.Data = data;
+		/// <summary>
+		/// Trims and makes lowercase an input string, replacing any internal spaces with underscores and slashes with dots
+		/// </summary>
+		public static string StrToId(string str)
+		{
+			var id = str?
+				.Trim()
+				.ToLower()
+				.Replace(' ', '_')
+				.Replace('/', '.')
+				.Replace('\\', '.');
+
+			if (!IsValidId(id)) throw new InvalidResourceIdException();
+
+			return id;
 		}
 	}
 }

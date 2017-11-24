@@ -26,45 +26,67 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Wyverne.Core.IO.Serialization
 {
 	public class WyResourceDictionary : IWyResource
 	{
-		private IDictionary<string, WyDataChunk> _resources;
+		private IDictionary<string, IWyResource> _resources;
 
-		public WyResourceDictionary() : this(new WySerializationContext[0]) { }
-
-		public WyResourceDictionary(IEnumerable<WySerializationContext> initializeFrom)
+		public WyResourceDictionary()
 		{
-			this._resources = new Dictionary<string, WyDataChunk>();
-
-			foreach (var resource in initializeFrom) {
-				var type = resource.Type;
-				var id = resource.Id;
-				var data = resource.Data;
-
-				if (data == null || data.Disposed) throw new ObjectDisposedException(nameof(data));
-				if (_resources.ContainsKey(id.ToLower())) throw new ArgumentException($"A resource with the key '{id}' already exists");
-
-			}
+			this._resources = new Dictionary<string, IWyResource>();
 		}
 
 		/// <summary>
-		/// Adds a resource to the dictionary
+		/// Saves an existing resource to the dictionary without serializing it. If a resource already exists
+		/// with the same key an exception is thrown.
 		/// </summary>
-		public void AddResource(WySerializationContext context)
-		{ AddResource(context.Id, context.Data); }
+		public void AddResource(string resourceId, IWyResource resource)
+		{
+			if (resource == null) throw new ArgumentNullException();
+			var key = WyResource.StrToId(resourceId);
+
+			if (this._resources.ContainsKey(key)) throw new ArgumentException($"A resource with the key '{key}' already exists");
+
+			this._resources[key] = resource;
+		}
 
 		/// <summary>
-		/// Adds a resource to the dictionary
+		/// Creates a new resource from a serialization context by calling its Constructor taking one parameter of
+		/// type byte[], and adds it to the dictionary. If a resource already exists with the same key an exception is thrown.
 		/// </summary>
-		public void AddResource(string resourceId, WyDataChunk resourceData)
+		public IWyResource LoadResource(WySerializationContext context)
 		{
-			if (resourceData == null || resourceData.Disposed) throw new ObjectDisposedException(nameof(resourceData));
-			if (String.IsNullOrWhiteSpace(resourceId)) throw new InvalidResourceIdException();
+			// Disposed check
+			if (context.Data == null || context.Data.Disposed)
+				throw new ObjectDisposedException(nameof(context.Data));
 
-			_resources.Add(resourceId.Trim().ToLower(), resourceData);
+			// Get the data we need
+			var key = WyResource.StrToId(context.Id);
+			var type = context.Type;
+			var res = (IWyResource)null;
+
+			if (this._resources.ContainsKey(key)) throw new ArgumentException($"A resource with the key '{key}' already exists");
+
+			// Attempt to create a new instance
+			using (context.Data) {
+				// Get the constructor
+				var ctor = type.GetConstructor(new[] { typeof(byte[]) });
+				if (ctor == null) throw new System.Reflection.TargetException($"Target type '{type}' must contain a constructor which accepts a single argument of type byte[]");
+
+				// Load data and create new resource
+				var arg = context.Data.GetInternal();
+				res = (IWyResource)ctor.Invoke(new[] { arg ?? new byte[0] });
+			}
+
+			// Save it
+			if (res != null) {
+				this._resources[key] = res;
+			}
+
+			return res;
 		}
 
 		/// <summary>
@@ -73,26 +95,37 @@ namespace Wyverne.Core.IO.Serialization
 		/// <param name="resourceId">Resource identifier.</param>
 		public void RemoveResource(string resourceId)
 		{
-			if (String.IsNullOrWhiteSpace(resourceId)) throw new InvalidResourceIdException();
-
-			_resources.Remove(resourceId.Trim().ToLower());
+			var key = WyResource.StrToId(resourceId);
+			_resources.Remove(key);
 		}
 
 		/// <summary>
-		/// Returns a stream of bytes for the selected stream
+		/// Retrieves a resource by id or null if it doesn't exist
 		/// </summary>
 		/// <returns>The resource.</returns>
-		public Stream GetResource(string resourceId)
+		public IWyResource GetResource(string resourceId)
 		{
-			if (String.IsNullOrWhiteSpace(resourceId)) throw new InvalidResourceIdException();
-
-			var data = _resources[resourceId.Trim().ToLower()];
-			return new MemoryStream(data.GetInternal());
+			var key = WyResource.StrToId(resourceId);
+			if (_resources.ContainsKey(key)) return _resources[key];
+			else return null;
 		}
+
+		/// <summary>
+		/// Retrieves an array of all the resources of a given type
+		/// </summary>
+		public T[] GetResources<T>() where T : IWyResource
+		{ return _resources.Values.Where(r => r.GetType() == typeof(T)).Cast<T>().ToArray(); }
+
+		/// <summary>
+		/// Retrieves an array of all resources
+		/// </summary>
+		/// <returns>The resources.</returns>
+		public IWyResource[] GetResources()
+		{ return _resources.Values.ToArray();}
 
 		public WySerializationContext Serialize()
 		{
-			// Collect all the datas from the resources
+			// TODO write this
 			return default(WySerializationContext);
 
 		}

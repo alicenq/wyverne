@@ -69,8 +69,6 @@ namespace Wyverne.Core.IO.Serialization
 					// The current read chunk
 					var chunk = _chunks[_currentChunk];
 
-					Console.WriteLine(chunk.Length);
-
 					// Skip disposed chunks
 					if (chunk.Length <= 0 || _readIndex > chunk.Length) {
 						_currentChunk++;
@@ -87,10 +85,13 @@ namespace Wyverne.Core.IO.Serialization
 					// Add to variables
 					totalReadBytes += readBytes;
 					writeIndex += readBytes;
+					_readIndex += readBytes;
 
 					// Advance and reset
-					_currentChunk++;
-					_readIndex = 0;
+					if (_readIndex >= chunk.Length) {
+						_currentChunk++;
+						_readIndex = 0;
+					}
 				}
 
 				return totalReadBytes;

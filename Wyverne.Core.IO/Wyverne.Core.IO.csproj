@@ -45,6 +45,7 @@
     <Compile Include="Serialization\IWyResource.cs" />
     <Compile Include="Serialization\Exceptions.cs" />
     <Compile Include="Serialization\WyDataStream.cs" />
+    <Compile Include="Serialization\WySerializationContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Serialization\" />

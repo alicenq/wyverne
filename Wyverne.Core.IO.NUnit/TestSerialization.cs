@@ -125,5 +125,28 @@ namespace Wyverne.Core.IO.NUnit
 
 			Assert.AreEqual(s.GetJSONProperties(uut), s.GetJSONProperties(copy));
 		}
+
+		[Test]
+		public void TestSerializationContext()
+		{
+			Console.WriteLine("Run TestSerializationContext");
+
+			// Create context
+			var data = WyDataChunk.FromString("abcdefghijklmnopqrstuvwxyz");
+			var context = new WySerializationContext("Resources/Test1", typeof(WyResource), data);
+
+			// Turn into into a byte stream
+			var str = new WyDataStream(context.GetHeader());
+
+			// Create a new context
+			var newContext = WySerializationContext.ParseStream(str);
+
+			// Assert equality
+			Assert.AreNotSame(context, newContext);
+			Assert.AreEqual(context.Id, newContext.Id);
+			Assert.AreEqual(context.Type, newContext.Type);
+			Assert.AreEqual(context.Length, newContext.Length);
+			Assert.AreEqual(context.Data.ToUTF8String(), newContext.Data.ToUTF8String());
+		}
 	}
 }
