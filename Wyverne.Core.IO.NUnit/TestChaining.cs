@@ -135,9 +135,63 @@ namespace Wyverne.Core.IO.NUnit
 
 			// Assert
 			Assert.AreEqual(chunks.Last().Next, chunks.First());
-			Assert.AreEqual(str, "aaabbbcccddd");
+			Assert.AreEqual(str, "aaabbbcccdddaaabbbcccdddaaabbbcccddd");
 			chunks.ToList().ForEach(c => Assert.IsTrue(c.Disposed));
 		}
 
+		[Test]
+		public void TestSingleChunkStream()
+		{
+			Console.WriteLine("Run TestSingleChunkStream");
+
+			// Create a simple chunk
+			var input = "1234567890";
+			var chunk = WyDataChunk.FromString(input);
+
+			// Create stream
+			var stream = new WyDataStream(chunk);
+
+			// Read the entire stream into a buffer and create a new string from that
+			var buff = new byte[stream.Length];
+			stream.Read(buff, 0, buff.Length);
+
+			// Serialize into a new string
+			var output = WyDataChunk.FromBytes(buff).ToUTF8String();
+
+			// Assert equality
+			Assert.AreEqual(input, output);
+		}
+
+		[Test]
+		public void TestDualChunkStream()
+		{
+			Console.WriteLine("Run TestDualChunkStream");
+
+			// Create a simple chunk
+			var dc_a = WyDataChunk.FromString("1234567890");
+			var dc_b = WyDataChunk.FromString("abcdefghijklmnopqrstuvwxyz");
+
+			dc_b.Follows(dc_a);
+
+			// Create stream
+			var stream = new WyDataStream(dc_a);
+
+			// Read the entire stream into a buffer and create a new string from that
+			var buff = new byte[stream.Length];
+			stream.Read(buff, 0, buff.Length);
+
+			// Serialize into a new string
+			var output = WyDataChunk.FromBytes(buff).ToUTF8String();
+
+			// Dispose of stream
+			stream.Dispose();
+
+			Console.WriteLine(output);
+
+			// Assert equality
+			Assert.AreEqual("1234567890abcdefghijklmnopqrstuvwxyz", output);
+			Assert.IsTrue(dc_a.Disposed);
+			Assert.IsTrue(dc_b.Disposed);
+		}
 	}
 }

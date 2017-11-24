@@ -40,6 +40,11 @@
     <Compile Include="WyDocMetadata.cs" />
     <Compile Include="Serialization\WyDocumentSerializer.cs" />
     <Compile Include="Serialization\WyDataChunk.cs" />
+    <Compile Include="Serialization\WyResources.cs" />
+    <Compile Include="Serialization\WyResourceDictionary.cs" />
+    <Compile Include="Serialization\IWyResource.cs" />
+    <Compile Include="Serialization\Exceptions.cs" />
+    <Compile Include="Serialization\WyDataStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Serialization\" />

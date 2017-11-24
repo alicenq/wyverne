@@ -1,4 +1,4 @@
-﻿//
+//
 // WyDataChunk.cs
 //
 // Author:
@@ -82,7 +82,7 @@ namespace Wyverne.Core.IO.Serialization
 		}
 
 		public override string ToString()
-		{ return Length >= 0 ? "{ Disposed }" : $"{{ Bytes: {Length} }}"; }
+		{ return _buffer == null ? "{ Disposed }" : $"{{ Bytes: {_buffer.Length} }}"; }
 
 		/// <summary>
 		/// Reads the byte at the given offset
@@ -192,6 +192,27 @@ namespace Wyverne.Core.IO.Serialization
 
 				return minCount;
 			}
+		}
+
+		/// <summary>
+		/// Copies the entire contents of the data chunk into a new buffer
+		/// </summary>
+		/// <returns>The copy.</returns>
+		public byte[] ReadCopy()
+		{
+			if (_buffer == null) throw new ObjectDisposedException(nameof(WyDataChunk));
+			var copy = new byte[this.Length];
+			Array.Copy(this._buffer, copy, copy.Length);
+			return copy;
+		}
+
+		/// <summary>
+		/// Returns the internal data structure without copying
+		/// </summary>
+		internal byte[] GetInternal()
+		{
+			if (_buffer == null) throw new ObjectDisposedException(nameof(WyDataChunk));
+			return this._buffer;
 		}
 
 		/// <summary>
