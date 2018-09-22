@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import me.aliceq.wyverne.resources.IWySerializableResource;
 
 /**
  * Serializes a resource into a byte stream
@@ -56,7 +57,7 @@ public class WyResourceCompressor implements AutoCloseable {
      * @return The total number of bytes written
      * @throws IOException
      */
-    public long digest(IWyResource resource) throws IOException {
+    public long digest(IWySerializableResource resource) throws IOException {
         InputStream input = resource.toByteStream();
 
         ZipEntry entry = new ZipEntry(resource.resourceId());
